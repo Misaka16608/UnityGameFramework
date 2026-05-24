@@ -4,6 +4,7 @@
 // Homepage: https://gameframework.cn/
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
+// AzCat Mod: 中文支持
 
 using GameFramework;
 using System.Collections.Generic;
@@ -47,10 +48,13 @@ namespace UnityGameFramework.Editor.ResourceTools
         private string[][] m_CachedCircularDependencyDatas = null;
         private Vector2 m_CircularDependencyScroll = Vector2.zero;
 
+        private static readonly string[] m_ToolbarNames = new string[] { "概览 Summary", "资源依赖 Asset Dependency", "散落资源 Scattered Assets", "循环依赖 Circular Dependency" };
+
+        [MenuItem("AZWorkingCat/资源工具/资源分析 Resource Analyzer", false, 42)]
         [MenuItem("Game Framework/Resource Tools/Resource Analyzer", false, 42)]
         private static void Open()
         {
-            ResourceAnalyzer window = GetWindow<ResourceAnalyzer>("Resource Analyzer", true);
+            ResourceAnalyzer window = GetWindow<ResourceAnalyzer>("资源分析 (Resource Analyzer)", true);
             window.minSize = new Vector2(800f, 600f);
         }
 
@@ -98,7 +102,7 @@ namespace UnityGameFramework.Editor.ResourceTools
             EditorGUILayout.BeginVertical(GUILayout.Width(position.width), GUILayout.Height(position.height));
             {
                 GUILayout.Space(5f);
-                int toolbarIndex = GUILayout.Toolbar(m_ToolbarIndex, new string[] { "Summary", "Asset Dependency Viewer", "Scattered Asset Viewer", "Circular Dependency Viewer" }, GUILayout.Height(30f));
+                int toolbarIndex = GUILayout.Toolbar(m_ToolbarIndex, m_ToolbarNames, GUILayout.Height(30f));
                 if (toolbarIndex != m_ToolbarIndex)
                 {
                     m_ToolbarIndex = toolbarIndex;
@@ -131,10 +135,10 @@ namespace UnityGameFramework.Editor.ResourceTools
         {
             if (!m_Analyzed)
             {
-                EditorGUILayout.HelpBox("Please analyze first.", MessageType.Info);
+                EditorGUILayout.HelpBox(TR("请先进行分析 (Please analyze first)."), MessageType.Info);
             }
 
-            if (GUILayout.Button("Analyze", GUILayout.Height(30f)))
+            if (GUILayout.Button(TR("开始分析 Analyze"), GUILayout.Height(30f)))
             {
                 m_Controller.Clear();
 
@@ -159,7 +163,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                 }
                 else
                 {
-                    EditorUtility.DisplayDialog("Resource Analyze", "Can not parse 'ResourceCollection.xml', please use 'Resource Editor' tool first.", "OK");
+                    EditorUtility.DisplayDialog(TR("资源分析 Resource Analyze"), TR("无法解析 'ResourceCollection.xml'，请先使用资源编辑器 (Resource Editor) 工具。"), TR("确定 OK"));
                 }
             }
         }
@@ -186,11 +190,11 @@ namespace UnityGameFramework.Editor.ResourceTools
                     string title = null;
                     if (string.IsNullOrEmpty(m_AssetsFilter))
                     {
-                        title = Utility.Text.Format("Assets In Resources ({0})", m_AssetCount);
+                        title = Utility.Text.Format(TR("资源内资产 Assets In Resources ({0})"), m_AssetCount);
                     }
                     else
                     {
-                        title = Utility.Text.Format("Assets In Resources ({0}/{1})", m_CachedAssetNames.Length, m_AssetCount);
+                        title = Utility.Text.Format(TR("资源内资产 Assets In Resources ({0}/{1})"), m_CachedAssetNames.Length, m_AssetCount);
                     }
                     EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
                     EditorGUILayout.BeginVertical("box", GUILayout.Height(position.height - 150f));
@@ -210,11 +214,11 @@ namespace UnityGameFramework.Editor.ResourceTools
                     EditorGUILayout.EndVertical();
                     EditorGUILayout.BeginVertical("box");
                     {
-                        EditorGUILayout.LabelField("Asset Name", m_SelectedAssetName ?? "<None>");
-                        EditorGUILayout.LabelField("Resource Name", m_SelectedAssetName == null ? "<None>" : m_Controller.GetAsset(m_SelectedAssetName).Resource.FullName);
+                        EditorGUILayout.LabelField(TR("资产名 Asset Name"), m_SelectedAssetName ?? "<None>");
+                        EditorGUILayout.LabelField(TR("资源名 Resource Name"), m_SelectedAssetName == null ? "<None>" : m_Controller.GetAsset(m_SelectedAssetName).Resource.FullName);
                         EditorGUILayout.BeginHorizontal();
                         {
-                            AssetsOrder assetsOrder = (AssetsOrder)EditorGUILayout.EnumPopup("Order by", m_AssetsOrder);
+                            AssetsOrder assetsOrder = (AssetsOrder)EditorGUILayout.EnumPopup(TR("排序 Order by"), m_AssetsOrder);
                             if (assetsOrder != m_AssetsOrder)
                             {
                                 m_AssetsOrder = assetsOrder;
@@ -224,7 +228,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                         EditorGUILayout.EndHorizontal();
                         EditorGUILayout.BeginHorizontal();
                         {
-                            string assetsFilter = EditorGUILayout.TextField("Assets Filter", m_AssetsFilter);
+                            string assetsFilter = EditorGUILayout.TextField(TR("过滤 Filter"), m_AssetsFilter);
                             if (assetsFilter != m_AssetsFilter)
                             {
                                 m_AssetsFilter = assetsFilter;
@@ -232,7 +236,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                             }
                             EditorGUI.BeginDisabledGroup(string.IsNullOrEmpty(m_AssetsFilter));
                             {
-                                if (GUILayout.Button("x", GUILayout.Width(20f)))
+                                if (GUILayout.Button(TR("×"), GUILayout.Width(20f)))
                                 {
                                     m_AssetsFilter = null;
                                     GUI.FocusControl(null);
@@ -249,7 +253,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                 EditorGUILayout.BeginVertical(GUILayout.Width(position.width * 0.6f - 14f));
                 {
                     GUILayout.Space(5f);
-                    EditorGUILayout.LabelField(Utility.Text.Format("Dependency Resources ({0})", m_SelectedDependencyData.DependencyResourceCount), EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(Utility.Text.Format(TR("依赖资源 Dependency Resources ({0})"), m_SelectedDependencyData.DependencyResourceCount), EditorStyles.boldLabel);
                     EditorGUILayout.BeginVertical("box", GUILayout.Height(position.height * 0.2f));
                     {
                         m_DependencyResourcesScroll = EditorGUILayout.BeginScrollView(m_DependencyResourcesScroll);
@@ -263,7 +267,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                         EditorGUILayout.EndScrollView();
                     }
                     EditorGUILayout.EndVertical();
-                    EditorGUILayout.LabelField(Utility.Text.Format("Dependency Assets ({0})", m_SelectedDependencyData.DependencyAssetCount), EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(Utility.Text.Format(TR("依赖资产 Dependency Assets ({0})"), m_SelectedDependencyData.DependencyAssetCount), EditorStyles.boldLabel);
                     EditorGUILayout.BeginVertical("box", GUILayout.Height(position.height * 0.3f));
                     {
                         m_DependencyAssetsScroll = EditorGUILayout.BeginScrollView(m_DependencyAssetsScroll);
@@ -288,7 +292,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                         EditorGUILayout.EndScrollView();
                     }
                     EditorGUILayout.EndVertical();
-                    EditorGUILayout.LabelField(Utility.Text.Format("Scattered Dependency Assets ({0})", m_SelectedDependencyData.ScatteredDependencyAssetCount), EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(Utility.Text.Format(TR("散落依赖资产 Scattered Dependency Assets ({0})"), m_SelectedDependencyData.ScatteredDependencyAssetCount), EditorStyles.boldLabel);
                     EditorGUILayout.BeginVertical("box", GUILayout.Height(position.height * 0.5f - 116f));
                     {
                         m_ScatteredDependencyAssetsScroll = EditorGUILayout.BeginScrollView(m_ScatteredDependencyAssetsScroll);
@@ -342,11 +346,11 @@ namespace UnityGameFramework.Editor.ResourceTools
                     string title = null;
                     if (string.IsNullOrEmpty(m_ScatteredAssetsFilter))
                     {
-                        title = Utility.Text.Format("Scattered Assets ({0})", m_ScatteredAssetCount);
+                        title = Utility.Text.Format(TR("散落资产 Scattered Assets ({0})"), m_ScatteredAssetCount);
                     }
                     else
                     {
-                        title = Utility.Text.Format("Scattered Assets ({0}/{1})", m_CachedScatteredAssetNames.Length, m_ScatteredAssetCount);
+                        title = Utility.Text.Format(TR("散落资产 Scattered Assets ({0}/{1})"), m_CachedScatteredAssetNames.Length, m_ScatteredAssetCount);
                     }
                     EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
                     EditorGUILayout.BeginVertical("box", GUILayout.Height(position.height - 132f));
@@ -366,10 +370,10 @@ namespace UnityGameFramework.Editor.ResourceTools
                     EditorGUILayout.EndVertical();
                     EditorGUILayout.BeginVertical("box");
                     {
-                        EditorGUILayout.LabelField("Scattered Asset Name", m_SelectedScatteredAssetName ?? "<None>");
+                        EditorGUILayout.LabelField(TR("散落资产名 Scattered Asset Name"), m_SelectedScatteredAssetName ?? "<None>");
                         EditorGUILayout.BeginHorizontal();
                         {
-                            ScatteredAssetsOrder scatteredAssetsOrder = (ScatteredAssetsOrder)EditorGUILayout.EnumPopup("Order by", m_ScatteredAssetsOrder);
+                            ScatteredAssetsOrder scatteredAssetsOrder = (ScatteredAssetsOrder)EditorGUILayout.EnumPopup(TR("排序 Order by"), m_ScatteredAssetsOrder);
                             if (scatteredAssetsOrder != m_ScatteredAssetsOrder)
                             {
                                 m_ScatteredAssetsOrder = scatteredAssetsOrder;
@@ -379,7 +383,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                         EditorGUILayout.EndHorizontal();
                         EditorGUILayout.BeginHorizontal();
                         {
-                            string scatteredAssetsFilter = EditorGUILayout.TextField("Assets Filter", m_ScatteredAssetsFilter);
+                            string scatteredAssetsFilter = EditorGUILayout.TextField(TR("过滤 Filter"), m_ScatteredAssetsFilter);
                             if (scatteredAssetsFilter != m_ScatteredAssetsFilter)
                             {
                                 m_ScatteredAssetsFilter = scatteredAssetsFilter;
@@ -387,7 +391,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                             }
                             EditorGUI.BeginDisabledGroup(string.IsNullOrEmpty(m_ScatteredAssetsFilter));
                             {
-                                if (GUILayout.Button("x", GUILayout.Width(20f)))
+                                if (GUILayout.Button(TR("×"), GUILayout.Width(20f)))
                                 {
                                     m_ScatteredAssetsFilter = null;
                                     GUI.FocusControl(null);
@@ -404,7 +408,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                 EditorGUILayout.BeginVertical(GUILayout.Width(position.width * 0.6f - 14f));
                 {
                     GUILayout.Space(5f);
-                    EditorGUILayout.LabelField(Utility.Text.Format("Host Assets ({0})", m_SelectedHostAssets.Length), EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(Utility.Text.Format(TR("宿主资产 Host Assets ({0})"), m_SelectedHostAssets.Length), EditorStyles.boldLabel);
                     EditorGUILayout.BeginVertical("box", GUILayout.Height(position.height - 68f));
                     {
                         m_HostAssetsScroll = EditorGUILayout.BeginScrollView(m_HostAssetsScroll);
@@ -450,7 +454,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                 EditorGUILayout.BeginVertical();
                 {
                     GUILayout.Space(5f);
-                    EditorGUILayout.LabelField(Utility.Text.Format("Circular Dependency ({0})", m_CircularDependencyCount), EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(Utility.Text.Format(TR("循环依赖 Circular Dependency ({0})"), m_CircularDependencyCount), EditorStyles.boldLabel);
                     m_CircularDependencyScroll = EditorGUILayout.BeginScrollView(m_CircularDependencyScroll);
                     {
                         int count = 0;
@@ -505,14 +509,19 @@ namespace UnityGameFramework.Editor.ResourceTools
             }
         }
 
+        private static string TR(string text)
+        {
+            return text;
+        }
+
         private void OnLoadingResource(int index, int count)
         {
-            EditorUtility.DisplayProgressBar("Loading Resources", Utility.Text.Format("Loading resources, {0}/{1} loaded.", index, count), (float)index / count);
+            EditorUtility.DisplayProgressBar(TR("加载资源 Loading Resources"), Utility.Text.Format(TR("加载资源中 {0}/{1}"), index, count), (float)index / count);
         }
 
         private void OnLoadingAsset(int index, int count)
         {
-            EditorUtility.DisplayProgressBar("Loading Assets", Utility.Text.Format("Loading assets, {0}/{1} loaded.", index, count), (float)index / count);
+            EditorUtility.DisplayProgressBar(TR("加载资产 Loading Assets"), Utility.Text.Format(TR("加载资产中 {0}/{1}"), index, count), (float)index / count);
         }
 
         private void OnLoadCompleted()
@@ -522,7 +531,7 @@ namespace UnityGameFramework.Editor.ResourceTools
 
         private void OnAnalyzingAsset(int index, int count)
         {
-            EditorUtility.DisplayProgressBar("Analyzing Assets", Utility.Text.Format("Analyzing assets, {0}/{1} analyzed.", index, count), (float)index / count);
+            EditorUtility.DisplayProgressBar(TR("分析资产 Analyzing Assets"), Utility.Text.Format(TR("分析资产中 {0}/{1}"), index, count), (float)index / count);
         }
 
         private void OnAnalyzeCompleted()

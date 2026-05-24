@@ -4,6 +4,7 @@
 // Homepage: https://gameframework.cn/
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
+// AzCat Mod: 中文支持 + 搜索过滤
 
 using GameFramework;
 using System.Collections.Generic;
@@ -44,10 +45,15 @@ namespace UnityGameFramework.Editor.ResourceTools
         private int m_CurrentResourceRowOnDraw = 0;
         private int m_CurrentSourceRowOnDraw = 0;
 
+        // AzCat: 搜索过滤
+        private string m_ResourceSearchFilter = string.Empty;
+        private string m_SourceAssetSearchFilter = string.Empty;
+
+        [MenuItem("AZWorkingCat/资源工具/资源编辑 Resource Editor", false, 41)]
         [MenuItem("Game Framework/Resource Tools/Resource Editor", false, 41)]
         private static void Open()
         {
-            ResourceEditor window = GetWindow<ResourceEditor>("Resource Editor", true);
+            ResourceEditor window = GetWindow<ResourceEditor>("资源编辑 (Resource Editor)", true);
             window.minSize = new Vector2(1400f, 600f);
         }
 
@@ -108,8 +114,26 @@ namespace UnityGameFramework.Editor.ResourceTools
                 EditorGUILayout.BeginVertical(GUILayout.Width(position.width * 0.25f));
                 {
                     GUILayout.Space(5f);
-                    EditorGUILayout.LabelField(Utility.Text.Format("Resource List ({0})", m_Controller.ResourceCount), EditorStyles.boldLabel);
-                    EditorGUILayout.BeginHorizontal("box", GUILayout.Height(position.height - 52f));
+                    EditorGUILayout.LabelField(TR("资源列表"), EditorStyles.boldLabel);
+                    // AzCat: 搜索过滤
+                    GUILayout.BeginHorizontal();
+                    {
+                        EditorGUILayout.LabelField(TR("搜索 Search"), GUILayout.Width(50f));
+                        string newFilter = EditorGUILayout.TextField(m_ResourceSearchFilter);
+                        if (newFilter != m_ResourceSearchFilter)
+                        {
+                            m_ResourceSearchFilter = newFilter;
+                            RefreshResourceTree();
+                        }
+                        if (GUILayout.Button("×", GUILayout.Width(20f)) && !string.IsNullOrEmpty(m_ResourceSearchFilter))
+                        {
+                            m_ResourceSearchFilter = string.Empty;
+                            GUI.FocusControl(null);
+                            RefreshResourceTree();
+                        }
+                    }
+                    GUILayout.EndHorizontal();
+                    EditorGUILayout.BeginHorizontal("box", GUILayout.Height(position.height - 72f));
                     {
                         DrawResourcesView();
                     }
@@ -125,7 +149,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                 EditorGUILayout.BeginVertical(GUILayout.Width(position.width * 0.25f));
                 {
                     GUILayout.Space(5f);
-                    EditorGUILayout.LabelField(Utility.Text.Format("Resource Content ({0})", m_CurrentResourceContentCount), EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(TR("资源内容 Resource Content"), EditorStyles.boldLabel);
                     EditorGUILayout.BeginHorizontal("box", GUILayout.Height(position.height - 52f));
                     {
                         DrawResourceView();
@@ -142,8 +166,20 @@ namespace UnityGameFramework.Editor.ResourceTools
                 EditorGUILayout.BeginVertical(GUILayout.Width(position.width * 0.5f - 16f));
                 {
                     GUILayout.Space(5f);
-                    EditorGUILayout.LabelField("Asset List", EditorStyles.boldLabel);
-                    EditorGUILayout.BeginHorizontal("box", GUILayout.Height(position.height - 52f));
+                    EditorGUILayout.LabelField(TR("资产列表 Asset List"), EditorStyles.boldLabel);
+                    // AzCat: 搜索过滤
+                    GUILayout.BeginHorizontal();
+                    {
+                        EditorGUILayout.LabelField(TR("搜索 Search"), GUILayout.Width(50f));
+                        m_SourceAssetSearchFilter = EditorGUILayout.TextField(m_SourceAssetSearchFilter);
+                        if (GUILayout.Button("×", GUILayout.Width(20f)) && !string.IsNullOrEmpty(m_SourceAssetSearchFilter))
+                        {
+                            m_SourceAssetSearchFilter = string.Empty;
+                            GUI.FocusControl(null);
+                        }
+                    }
+                    GUILayout.EndHorizontal();
+                    EditorGUILayout.BeginHorizontal("box", GUILayout.Height(position.height - 72f));
                     {
                         DrawSourceAssetsView();
                     }
@@ -166,9 +202,18 @@ namespace UnityGameFramework.Editor.ResourceTools
             m_CurrentResourceRowOnDraw = 0;
             m_ResourcesViewScroll = EditorGUILayout.BeginScrollView(m_ResourcesViewScroll);
             {
-                DrawResourceFolder(m_ResourceRoot);
+                if (string.IsNullOrEmpty(m_ResourceSearchFilter))
+                    DrawResourceFolder(m_ResourceRoot);
+                else
+                    DrawResourceFolderFiltered(m_ResourceRoot);
             }
             EditorGUILayout.EndScrollView();
+        }
+
+        private bool PassesResourceFilter(string name)
+        {
+            return string.IsNullOrEmpty(m_ResourceSearchFilter) ||
+                   name.IndexOf(m_ResourceSearchFilter, System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void DrawResourceFolder(ResourceFolder folder)
@@ -212,6 +257,64 @@ namespace UnityGameFramework.Editor.ResourceTools
                     DrawResourceItem(resourceItem);
                 }
             }
+        }
+
+        private void DrawResourceFolderFiltered(ResourceFolder folder)
+        {
+            bool hasVisibleItems = false;
+            foreach (ResourceItem item in folder.GetItems())
+            {
+                if (PassesResourceFilter(item.Name))
+                {
+                    hasVisibleItems = true;
+                    break;
+                }
+            }
+            foreach (ResourceFolder sub in folder.GetFolders())
+            {
+                if (HasMatchingResource(sub))
+                {
+                    hasVisibleItems = true;
+                    break;
+                }
+            }
+            if (!hasVisibleItems) return;
+
+            bool expand = IsExpandedResourceFolder(folder);
+            EditorGUILayout.BeginHorizontal();
+            {
+                bool foldout = EditorGUI.Foldout(new Rect(18f + 14f * folder.Depth, 20f * m_CurrentResourceRowOnDraw + 4f, int.MaxValue, 14f), expand, string.Empty, true);
+                if (expand != foldout)
+                {
+                    expand = !expand;
+                    SetExpandedResourceFolder(folder, expand);
+                }
+                GUI.DrawTexture(new Rect(32f + 14f * folder.Depth, 20f * m_CurrentResourceRowOnDraw + 3f, 16f, 16f), ResourceFolder.Icon);
+                EditorGUILayout.LabelField(string.Empty, GUILayout.Width(44f + 14f * folder.Depth), GUILayout.Height(18f));
+                EditorGUILayout.LabelField(folder.Name);
+            }
+            EditorGUILayout.EndHorizontal();
+            m_CurrentResourceRowOnDraw++;
+
+            if (expand)
+            {
+                foreach (ResourceFolder subFolder in folder.GetFolders())
+                    DrawResourceFolderFiltered(subFolder);
+                foreach (ResourceItem resourceItem in folder.GetItems())
+                {
+                    if (PassesResourceFilter(resourceItem.Name))
+                        DrawResourceItem(resourceItem);
+                }
+            }
+        }
+
+        private bool HasMatchingResource(ResourceFolder folder)
+        {
+            foreach (ResourceItem item in folder.GetItems())
+                if (PassesResourceFilter(item.Name)) return true;
+            foreach (ResourceFolder sub in folder.GetFolders())
+                if (HasMatchingResource(sub)) return true;
+            return false;
         }
 
         private void DrawResourceItem(ResourceItem resourceItem)
@@ -272,7 +375,7 @@ namespace UnityGameFramework.Editor.ResourceTools
 
         private void DrawResourcesMenu_Normal()
         {
-            if (GUILayout.Button("Add", GUILayout.Width(65f)))
+            if (GUILayout.Button(TR("添加 Add"), GUILayout.Width(65f)))
             {
                 m_MenuState = MenuState.Add;
                 m_InputResourceName = null;
@@ -281,14 +384,14 @@ namespace UnityGameFramework.Editor.ResourceTools
             }
             EditorGUI.BeginDisabledGroup(m_SelectedResource == null);
             {
-                if (GUILayout.Button("Rename", GUILayout.Width(65f)))
+                if (GUILayout.Button(TR("重命名 Rename"), GUILayout.Width(80f)))
                 {
                     m_MenuState = MenuState.Rename;
                     m_InputResourceName = m_SelectedResource != null ? m_SelectedResource.Name : null;
                     m_InputResourceVariant = m_SelectedResource != null ? m_SelectedResource.Variant : null;
                     GUI.FocusControl(null);
                 }
-                if (GUILayout.Button("Remove", GUILayout.Width(65f)))
+                if (GUILayout.Button(TR("删除 Remove"), GUILayout.Width(65f)))
                 {
                     m_MenuState = MenuState.Remove;
                 }
@@ -304,7 +407,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                         SetResourceLoadType(loadType);
                     }
                 }
-                bool packed = EditorGUILayout.ToggleLeft("Packed", m_SelectedResource != null && m_SelectedResource.Packed, GUILayout.Width(65f));
+                bool packed = EditorGUILayout.ToggleLeft(TR("打包 Packed"), m_SelectedResource != null && m_SelectedResource.Packed, GUILayout.Width(70f));
                 if (m_SelectedResource != null && packed != m_SelectedResource.Packed)
                 {
                     SetResourcePacked(packed);
@@ -324,21 +427,21 @@ namespace UnityGameFramework.Editor.ResourceTools
             {
                 if (Event.current.isKey && Event.current.keyCode == KeyCode.Return)
                 {
-                    EditorUtility.DisplayProgressBar("Add Resource", "Processing...", 0f);
+                    EditorUtility.DisplayProgressBar(TR("添加资源 Add Resource"), TR("处理中 Processing..."), 0f);
                     AddResource(m_InputResourceName, m_InputResourceVariant, true);
                     EditorUtility.ClearProgressBar();
                     Repaint();
                 }
             }
 
-            if (GUILayout.Button("Add", GUILayout.Width(50f)))
+            if (GUILayout.Button(TR("添加 Add"), GUILayout.Width(50f)))
             {
-                EditorUtility.DisplayProgressBar("Add Resource", "Processing...", 0f);
+                EditorUtility.DisplayProgressBar(TR("添加资源 Add Resource"), TR("处理中 Processing..."), 0f);
                 AddResource(m_InputResourceName, m_InputResourceVariant, true);
                 EditorUtility.ClearProgressBar();
             }
 
-            if (GUILayout.Button("Back", GUILayout.Width(50f)))
+            if (GUILayout.Button(TR("返回 Back"), GUILayout.Width(50f)))
             {
                 m_MenuState = MenuState.Normal;
             }
@@ -361,21 +464,21 @@ namespace UnityGameFramework.Editor.ResourceTools
             {
                 if (Event.current.isKey && Event.current.keyCode == KeyCode.Return)
                 {
-                    EditorUtility.DisplayProgressBar("Rename Resource", "Processing...", 0f);
+                    EditorUtility.DisplayProgressBar(TR("重命名资源 Rename Resource"), TR("处理中 Processing..."), 0f);
                     RenameResource(m_SelectedResource, m_InputResourceName, m_InputResourceVariant);
                     EditorUtility.ClearProgressBar();
                     Repaint();
                 }
             }
 
-            if (GUILayout.Button("OK", GUILayout.Width(50f)))
+            if (GUILayout.Button(TR("确定 OK"), GUILayout.Width(50f)))
             {
-                EditorUtility.DisplayProgressBar("Rename Resource", "Processing...", 0f);
+                EditorUtility.DisplayProgressBar(TR("重命名资源 Rename Resource"), TR("处理中 Processing..."), 0f);
                 RenameResource(m_SelectedResource, m_InputResourceName, m_InputResourceVariant);
                 EditorUtility.ClearProgressBar();
             }
 
-            if (GUILayout.Button("Back", GUILayout.Width(50f)))
+            if (GUILayout.Button(TR("返回 Back"), GUILayout.Width(50f)))
             {
                 m_MenuState = MenuState.Normal;
             }
@@ -389,17 +492,17 @@ namespace UnityGameFramework.Editor.ResourceTools
                 return;
             }
 
-            GUILayout.Label(Utility.Text.Format("Remove '{0}' ?", m_SelectedResource.FullName));
+            GUILayout.Label(Utility.Text.Format(TR("确认删除 '{0}' ?"), m_SelectedResource.FullName));
 
-            if (GUILayout.Button("Yes", GUILayout.Width(50f)))
+            if (GUILayout.Button(TR("是 Yes"), GUILayout.Width(50f)))
             {
-                EditorUtility.DisplayProgressBar("Remove Resource", "Processing...", 0f);
+                EditorUtility.DisplayProgressBar(TR("删除资源 Remove Resource"), TR("处理中 Processing..."), 0f);
                 RemoveResource();
                 EditorUtility.ClearProgressBar();
                 m_MenuState = MenuState.Normal;
             }
 
-            if (GUILayout.Button("No", GUILayout.Width(50f)))
+            if (GUILayout.Button(TR("否 No"), GUILayout.Width(50f)))
             {
                 m_MenuState = MenuState.Normal;
             }
@@ -451,7 +554,7 @@ namespace UnityGameFramework.Editor.ResourceTools
 
         private void DrawResourceMenu()
         {
-            if (GUILayout.Button("All", GUILayout.Width(50f)) && m_SelectedResource != null)
+            if (GUILayout.Button(TR("全选 All"), GUILayout.Width(50f)) && m_SelectedResource != null)
             {
                 Asset[] assets = m_Controller.GetAssets(m_SelectedResource.Name, m_SelectedResource.Variant);
                 foreach (Asset asset in assets)
@@ -459,7 +562,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                     SetSelectedAssetInSelectedResource(asset, true);
                 }
             }
-            if (GUILayout.Button("None", GUILayout.Width(50f)))
+            if (GUILayout.Button(TR("取消 None"), GUILayout.Width(50f)))
             {
                 m_SelectedAssetsInSelectedResource.Clear();
             }
@@ -515,7 +618,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                     int count = selectedSourceAssets.Count;
                     foreach (SourceAsset sourceAsset in selectedSourceAssets)
                     {
-                        EditorUtility.DisplayProgressBar("Add Resources", Utility.Text.Format("{0}/{1} processing...", ++index, count), (float)index / count);
+                        EditorUtility.DisplayProgressBar(TR("添加资源 Add Resources"), Utility.Text.Format("{0}/{1} 处理中 processing...", ++index, count), (float)index / count);
                         int dotIndex = sourceAsset.FromRootPath.IndexOf('.');
                         string name = dotIndex > 0 ? sourceAsset.FromRootPath.Substring(0, dotIndex) : sourceAsset.FromRootPath;
                         AddResource(name, null, false);
@@ -528,7 +631,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                         AssignAsset(sourceAsset, resource);
                     }
 
-                    EditorUtility.DisplayProgressBar("Add Resources", "Complete processing...", 1f);
+                    EditorUtility.DisplayProgressBar(TR("添加资源 Add Resources"), TR("处理完成 Complete..."), 1f);
                     RefreshResourceTree();
                     EditorUtility.ClearProgressBar();
                     m_SelectedSourceAssets.Clear();
@@ -536,7 +639,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                 }
             }
             EditorGUI.EndDisabledGroup();
-            bool hideAssignedSourceAssets = EditorGUILayout.ToggleLeft("Hide Assigned", m_HideAssignedSourceAssets, GUILayout.Width(100f));
+            bool hideAssignedSourceAssets = EditorGUILayout.ToggleLeft(TR("隐藏已分配 Hide Assigned"), m_HideAssignedSourceAssets, GUILayout.Width(120f));
             if (hideAssignedSourceAssets != m_HideAssignedSourceAssets)
             {
                 m_HideAssignedSourceAssets = hideAssignedSourceAssets;
@@ -547,15 +650,15 @@ namespace UnityGameFramework.Editor.ResourceTools
             }
 
             GUILayout.Label(string.Empty);
-            if (GUILayout.Button("Clean", GUILayout.Width(80f)))
+            if (GUILayout.Button(TR("清理 Clean"), GUILayout.Width(80f)))
             {
-                EditorUtility.DisplayProgressBar("Clean", "Processing...", 0f);
+                EditorUtility.DisplayProgressBar(TR("清理 Clean"), TR("处理中 Processing..."), 0f);
                 CleanResource();
                 EditorUtility.ClearProgressBar();
             }
-            if (GUILayout.Button("Save", GUILayout.Width(80f)))
+            if (GUILayout.Button(TR("保存 Save"), GUILayout.Width(80f)))
             {
-                EditorUtility.DisplayProgressBar("Save", "Processing...", 0f);
+                EditorUtility.DisplayProgressBar(TR("保存 Save"), TR("处理中 Processing..."), 0f);
                 SaveConfiguration();
                 EditorUtility.ClearProgressBar();
             }
@@ -620,6 +723,13 @@ namespace UnityGameFramework.Editor.ResourceTools
         private void DrawSourceAsset(SourceAsset sourceAsset)
         {
             if (m_HideAssignedSourceAssets && IsAssignedSourceAsset(sourceAsset))
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(m_SourceAssetSearchFilter) &&
+                sourceAsset.Name.IndexOf(m_SourceAssetSearchFilter, System.StringComparison.OrdinalIgnoreCase) < 0 &&
+                sourceAsset.Path.IndexOf(m_SourceAssetSearchFilter, System.StringComparison.OrdinalIgnoreCase) < 0)
             {
                 return;
             }
@@ -1056,14 +1166,19 @@ namespace UnityGameFramework.Editor.ResourceTools
             return variant != null ? Utility.Text.Format("{0}.{1}", name, variant) : name;
         }
 
+        private static string TR(string text)
+        {
+            return text;
+        }
+
         private void OnLoadingResource(int index, int count)
         {
-            EditorUtility.DisplayProgressBar("Loading Resources", Utility.Text.Format("Loading resources, {0}/{1} loaded.", index, count), (float)index / count);
+            EditorUtility.DisplayProgressBar(TR("加载资源 Loading Resources"), Utility.Text.Format(TR("加载资源中 {0}/{1}"), index, count), (float)index / count);
         }
 
         private void OnLoadingAsset(int index, int count)
         {
-            EditorUtility.DisplayProgressBar("Loading Assets", Utility.Text.Format("Loading assets, {0}/{1} loaded.", index, count), (float)index / count);
+            EditorUtility.DisplayProgressBar(TR("加载资产 Loading Assets"), Utility.Text.Format(TR("加载资产中 {0}/{1}"), index, count), (float)index / count);
         }
 
         private void OnLoadCompleted()

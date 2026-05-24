@@ -80,6 +80,7 @@ namespace UnityGameFramework.Editor
         /// <summary>
         /// 将构建场景设置为默认。
         /// </summary>
+        [MenuItem("AZWorkingCat/场景管理/默认场景 Default Scenes", false, 20)]
         [MenuItem("Game Framework/Scenes in Build Settings/Default Scenes", false, 20)]
         public static void DefaultScenes()
         {
@@ -97,12 +98,13 @@ namespace UnityGameFramework.Editor
 
             EditorBuildSettings.scenes = scenes.ToArray();
 
-            Debug.Log("Set scenes of build settings to default scenes.");
+            Debug.Log("设置构建场景为默认场景 (Set scenes of build settings to default scenes).");
         }
 
         /// <summary>
         /// 将构建场景设置为所有。
         /// </summary>
+        [MenuItem("AZWorkingCat/场景管理/所有场景 All Scenes", false, 21)]
         [MenuItem("Game Framework/Scenes in Build Settings/All Scenes", false, 21)]
         public static void AllScenes()
         {

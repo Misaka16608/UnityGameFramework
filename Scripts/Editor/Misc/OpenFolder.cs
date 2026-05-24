@@ -20,6 +20,7 @@ namespace UnityGameFramework.Editor
         /// <summary>
         /// 打开 Data Path 文件夹。
         /// </summary>
+        [MenuItem("AZWorkingCat/打开文件夹/数据路径 Data Path", false, 10)]
         [MenuItem("Game Framework/Open Folder/Data Path", false, 10)]
         public static void OpenFolderDataPath()
         {
@@ -29,6 +30,7 @@ namespace UnityGameFramework.Editor
         /// <summary>
         /// 打开 Persistent Data Path 文件夹。
         /// </summary>
+        [MenuItem("AZWorkingCat/打开文件夹/持久数据路径 Persistent Data Path", false, 11)]
         [MenuItem("Game Framework/Open Folder/Persistent Data Path", false, 11)]
         public static void OpenFolderPersistentDataPath()
         {
@@ -38,6 +40,7 @@ namespace UnityGameFramework.Editor
         /// <summary>
         /// 打开 Streaming Assets Path 文件夹。
         /// </summary>
+        [MenuItem("AZWorkingCat/打开文件夹/流媒体资源路径 Streaming Assets Path", false, 12)]
         [MenuItem("Game Framework/Open Folder/Streaming Assets Path", false, 12)]
         public static void OpenFolderStreamingAssetsPath()
         {
@@ -47,6 +50,7 @@ namespace UnityGameFramework.Editor
         /// <summary>
         /// 打开 Temporary Cache Path 文件夹。
         /// </summary>
+        [MenuItem("AZWorkingCat/打开文件夹/临时缓存路径 Temporary Cache Path", false, 13)]
         [MenuItem("Game Framework/Open Folder/Temporary Cache Path", false, 13)]
         public static void OpenFolderTemporaryCachePath()
         {
@@ -58,6 +62,7 @@ namespace UnityGameFramework.Editor
         /// <summary>
         /// 打开 Console Log Path 文件夹。
         /// </summary>
+        [MenuItem("AZWorkingCat/打开文件夹/控制台日志路径 Console Log Path", false, 14)]
         [MenuItem("Game Framework/Open Folder/Console Log Path", false, 14)]
         public static void OpenFolderConsoleLogPath()
         {

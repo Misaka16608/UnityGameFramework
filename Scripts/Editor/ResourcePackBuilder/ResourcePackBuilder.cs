@@ -4,6 +4,7 @@
 // Homepage: https://gameframework.cn/
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
+// AzCat Mod: 中文支持
 
 using GameFramework;
 using System;
@@ -17,9 +18,9 @@ namespace UnityGameFramework.Editor.ResourceTools
     /// </summary>
     internal sealed class ResourcePackBuilder : EditorWindow
     {
-        private static readonly string[] PlatformForDisplay = new string[] { "Windows", "Windows x64", "macOS", "Linux", "iOS", "Android", "Windows Store", "WebGL" };
+        private static readonly string[] PlatformForDisplay = new string[] { TR("Windows"), TR("Windows x64"), TR("macOS"), TR("Linux"), TR("iOS"), TR("Android"), TR("Windows Store"), TR("WebGL") };
         private static readonly int[] LengthLimit = new int[] { 0, 128, 256, 512, 1024, 2048, 4096 };
-        private static readonly string[] LengthLimitForDisplay = new string[] { "<Unlimited>", "128 MB", "256 MB", "512 MB", "1 GB", "2 GB", "4 GB", "<Custom>" };
+        private static readonly string[] LengthLimitForDisplay = new string[] { TR("<无限制> <Unlimited>"), TR("128 MB"), TR("256 MB"), TR("512 MB"), TR("1 GB"), TR("2 GB"), TR("4 GB"), TR("<自定义> <Custom>") };
 
         private ResourcePackBuilderController m_Controller = null;
         private string[] m_VersionNames = null;
@@ -32,11 +33,25 @@ namespace UnityGameFramework.Editor.ResourceTools
         private bool[] m_SourceVersionIndexes = null;
         private int m_SourceVersionCount = 0;
 
+        [MenuItem("AZWorkingCat/资源工具/资源分包 Resource Pack Builder", false, 43)]
         [MenuItem("Game Framework/Resource Tools/Resource Pack Builder", false, 43)]
         private static void Open()
         {
-            ResourcePackBuilder window = GetWindow<ResourcePackBuilder>("Resource Pack Builder", true);
+            ResourcePackBuilder window = GetWindow<ResourcePackBuilder>("资源分包 (Resource Pack Builder)", true);
             window.minSize = new Vector2(800f, 400f);
+        }
+
+        private static string TR(string text)
+        {
+            return text;
+        }
+
+        public string WorkingDirectory
+        {
+            get
+            {
+                return m_Controller.WorkingDirectory;
+            }
         }
 
         private void OnEnable()
@@ -73,61 +88,61 @@ namespace UnityGameFramework.Editor.ResourceTools
             EditorGUILayout.BeginVertical(GUILayout.Width(position.width), GUILayout.Height(position.height));
             {
                 GUILayout.Space(5f);
-                EditorGUILayout.LabelField("Environment Information", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(TR("环境信息 Environment Information"), EditorStyles.boldLabel);
                 EditorGUILayout.BeginVertical("box");
                 {
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Product Name", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("产品名 Product Name"), GUILayout.Width(160f));
                         EditorGUILayout.LabelField(m_Controller.ProductName);
                     }
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Company Name", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("公司名 Company Name"), GUILayout.Width(160f));
                         EditorGUILayout.LabelField(m_Controller.CompanyName);
                     }
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Game Identifier", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("游戏标识 Game Identifier"), GUILayout.Width(160f));
                         EditorGUILayout.LabelField(m_Controller.GameIdentifier);
                     }
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Game Framework Version", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("GF 版本 Game Framework Version"), GUILayout.Width(160f));
                         EditorGUILayout.LabelField(m_Controller.GameFrameworkVersion);
                     }
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Unity Version", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("Unity 版本 Unity Version"), GUILayout.Width(160f));
                         EditorGUILayout.LabelField(m_Controller.UnityVersion);
                     }
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Applicable Game Version", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("适用游戏版本 Applicable Game Version"), GUILayout.Width(160f));
                         EditorGUILayout.LabelField(m_Controller.ApplicableGameVersion);
                     }
                     EditorGUILayout.EndHorizontal();
                 }
                 EditorGUILayout.EndVertical();
                 GUILayout.Space(5f);
-                EditorGUILayout.LabelField("Build", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(TR("构建 Build"), EditorStyles.boldLabel);
                 EditorGUILayout.BeginVertical("box");
                 {
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Working Directory", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("工作目录 Working Directory"), GUILayout.Width(160f));
                         string directory = EditorGUILayout.TextField(m_Controller.WorkingDirectory);
                         if (m_Controller.WorkingDirectory != directory)
                         {
                             m_Controller.WorkingDirectory = directory;
                             RefreshVersionNames();
                         }
-                        if (GUILayout.Button("Browse...", GUILayout.Width(80f)))
+                        if (GUILayout.Button(TR("浏览... Browse..."), GUILayout.Width(100f)))
                         {
                             BrowseWorkingDirectory();
                             RefreshVersionNames();
@@ -136,7 +151,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Platform", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("平台 Platform"), GUILayout.Width(160f));
                         int platformIndex = EditorGUILayout.Popup(m_PlatformIndex, PlatformForDisplay);
                         if (m_PlatformIndex != platformIndex)
                         {
@@ -148,7 +163,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.BeginHorizontal();
                     {
-                        EditorGUILayout.LabelField("Compression Helper", GUILayout.Width(160f));
+                        EditorGUILayout.LabelField(TR("压缩辅助器 Compression Helper"), GUILayout.Width(160f));
                         string[] names = m_Controller.GetCompressionHelperTypeNames();
                         int selectedIndex = EditorGUILayout.Popup(m_CompressionHelperTypeNameIndex, names);
                         if (selectedIndex != m_CompressionHelperTypeNameIndex)
@@ -176,7 +191,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                                 message += Environment.NewLine;
                             }
 
-                            message += "Working directory is invalid.";
+                            message += TR("工作目录无效 (Working directory is invalid).");
                         }
 
                         if (m_Controller.Platform == Platform.Undefined)
@@ -186,7 +201,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                                 message += Environment.NewLine;
                             }
 
-                            message += "Platform is invalid.";
+                            message += TR("平台未选择 (Platform is invalid).");
                         }
 
                         if (string.IsNullOrEmpty(m_Controller.CompressionHelperTypeName))
@@ -196,32 +211,32 @@ namespace UnityGameFramework.Editor.ResourceTools
                                 message += Environment.NewLine;
                             }
 
-                            message += "Compression helper is invalid.";
+                            message += TR("压缩辅助器未设置 (Compression helper is invalid).");
                         }
 
                         EditorGUILayout.HelpBox(message, MessageType.Error);
                     }
                     else if (m_VersionNamesForTargetDisplay.Length <= 0)
                     {
-                        EditorGUILayout.HelpBox("No version was found in the specified working directory and platform.", MessageType.Warning);
+                        EditorGUILayout.HelpBox(TR("未在指定的工作目录和平台中找到版本信息 (No version was found)."), MessageType.Warning);
                     }
                     else
                     {
                         EditorGUILayout.BeginHorizontal();
                         {
-                            EditorGUILayout.LabelField("Source Path", GUILayout.Width(160f));
+                            EditorGUILayout.LabelField(TR("源路径 Source Path"), GUILayout.Width(160f));
                             GUILayout.Label(m_Controller.SourcePathForDisplay);
                         }
                         EditorGUILayout.EndHorizontal();
                         EditorGUILayout.BeginHorizontal();
                         {
-                            EditorGUILayout.LabelField("Output Path", GUILayout.Width(160f));
+                            EditorGUILayout.LabelField(TR("输出路径 Output Path"), GUILayout.Width(160f));
                             GUILayout.Label(m_Controller.OutputPath);
                         }
                         EditorGUILayout.EndHorizontal();
                         EditorGUILayout.BeginHorizontal();
                         {
-                            EditorGUILayout.LabelField("Backup Diff", GUILayout.Width(160f));
+                            EditorGUILayout.LabelField(TR("备份差异 Backup Diff"), GUILayout.Width(160f));
                             m_Controller.BackupDiff = EditorGUILayout.Toggle(m_Controller.BackupDiff);
                         }
                         EditorGUILayout.EndHorizontal();
@@ -229,14 +244,14 @@ namespace UnityGameFramework.Editor.ResourceTools
                         {
                             EditorGUILayout.BeginHorizontal();
                             {
-                                EditorGUILayout.LabelField("Backup Version", GUILayout.Width(160f));
+                                EditorGUILayout.LabelField(TR("备份版本 Backup Version"), GUILayout.Width(160f));
                                 m_Controller.BackupVersion = EditorGUILayout.Toggle(m_Controller.BackupVersion);
                             }
                             EditorGUILayout.EndHorizontal();
                         }
                         EditorGUILayout.BeginHorizontal();
                         {
-                            EditorGUILayout.LabelField("Length Limit", GUILayout.Width(160f));
+                            EditorGUILayout.LabelField(TR("大小限制 Length Limit"), GUILayout.Width(160f));
                             EditorGUILayout.BeginVertical();
                             {
                                 int lengthLimitIndex = EditorGUILayout.Popup(m_LengthLimitIndex, LengthLimitForDisplay);
@@ -269,7 +284,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                         EditorGUILayout.EndHorizontal();
                         EditorGUILayout.BeginHorizontal();
                         {
-                            EditorGUILayout.LabelField("Target Version", GUILayout.Width(160f));
+                            EditorGUILayout.LabelField(TR("目标版本 Target Version"), GUILayout.Width(160f));
                             int value = EditorGUILayout.Popup(m_TargetVersionIndex, m_VersionNamesForTargetDisplay);
                             if (m_TargetVersionIndex != value)
                             {
@@ -280,13 +295,13 @@ namespace UnityGameFramework.Editor.ResourceTools
                         EditorGUILayout.EndHorizontal();
                         EditorGUILayout.BeginHorizontal();
                         {
-                            EditorGUILayout.LabelField("Source Version", GUILayout.Width(160f));
+                            EditorGUILayout.LabelField(TR("源版本 Source Version"), GUILayout.Width(160f));
                             EditorGUILayout.BeginVertical();
                             {
                                 EditorGUILayout.BeginHorizontal();
                                 {
-                                    EditorGUILayout.LabelField(m_SourceVersionCount.ToString() + (m_SourceVersionCount > 1 ? " items" : " item") + " selected.");
-                                    if (GUILayout.Button("Select All Except <None>", GUILayout.Width(180f)))
+                                    EditorGUILayout.LabelField(m_SourceVersionCount.ToString() + (m_SourceVersionCount > 1 ? TR(" 项已选择 items selected.") : TR(" 项已选择 item selected.")));
+                                    if (GUILayout.Button(TR("全选非 None Select All Except <None>"), GUILayout.Width(200f)))
                                     {
                                         m_SourceVersionIndexes[0] = false;
                                         for (int i = 1; i < m_SourceVersionIndexes.Length; i++)
@@ -296,7 +311,7 @@ namespace UnityGameFramework.Editor.ResourceTools
 
                                         RefreshSourceVersionCount();
                                     }
-                                    if (GUILayout.Button("Select All", GUILayout.Width(100f)))
+                                    if (GUILayout.Button(TR("全选 Select All"), GUILayout.Width(100f)))
                                     {
                                         for (int i = 0; i < m_SourceVersionIndexes.Length; i++)
                                         {
@@ -305,7 +320,7 @@ namespace UnityGameFramework.Editor.ResourceTools
 
                                         RefreshSourceVersionCount();
                                     }
-                                    if (GUILayout.Button("Select None", GUILayout.Width(100f)))
+                                    if (GUILayout.Button(TR("取消 Select None"), GUILayout.Width(100f)))
                                     {
                                         for (int i = 0; i < m_SourceVersionIndexes.Length; i++)
                                         {
@@ -361,7 +376,7 @@ namespace UnityGameFramework.Editor.ResourceTools
                 {
                     EditorGUI.BeginDisabledGroup(m_Controller.Platform == Platform.Undefined || string.IsNullOrEmpty(m_Controller.CompressionHelperTypeName) || !m_Controller.IsValidWorkingDirectory || m_SourceVersionCount <= 0);
                     {
-                        if (GUILayout.Button("Start Build Resource Packs"))
+                        if (GUILayout.Button(TR("开始构建资源包 Start Build Resource Packs")))
                         {
                             string[] sourceVersions = new string[m_SourceVersionCount];
                             int count = 0;
@@ -385,7 +400,7 @@ namespace UnityGameFramework.Editor.ResourceTools
 
         private void BrowseWorkingDirectory()
         {
-            string directory = EditorUtility.OpenFolderPanel("Select Working Directory", m_Controller.WorkingDirectory, string.Empty);
+            string directory = EditorUtility.OpenFolderPanel(TR("选择工作目录 Select Working Directory"), m_Controller.WorkingDirectory, string.Empty);
             if (!string.IsNullOrEmpty(directory))
             {
                 m_Controller.WorkingDirectory = directory;
