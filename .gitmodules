@@ -1,0 +1,3 @@
+[submodule "GameFramework"]
+	path = GameFramework
+	url = git@github.com:Misaka16608/GameFramework.git
