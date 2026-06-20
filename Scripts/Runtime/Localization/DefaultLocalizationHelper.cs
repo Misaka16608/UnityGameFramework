@@ -21,7 +21,7 @@ namespace UnityGameFramework.Runtime
     {
         private static readonly string[] ColumnSplitSeparator = new string[] { "\t" };
         private static readonly string BytesAssetExtension = ".bytes";
-        private const int ColumnCount = 4;
+        private const int ColumnCount = 2;
 
         private ResourceComponent m_ResourceComponent = null;
 
@@ -158,8 +158,8 @@ namespace UnityGameFramework.Runtime
                         return false;
                     }
 
-                    string dictionaryKey = splitedLine[1];
-                    string dictionaryValue = splitedLine[3];
+                    int dictionaryKey = int.Parse(splitedLine[0]);
+                    string dictionaryValue = splitedLine[1];
                     if (!localizationManager.AddRawString(dictionaryKey, dictionaryValue))
                     {
                         Log.Warning("Can not add raw string with dictionary key '{0}' which may be invalid or duplicate.", dictionaryKey);
@@ -195,7 +195,7 @@ namespace UnityGameFramework.Runtime
                     {
                         while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
                         {
-                            string dictionaryKey = binaryReader.ReadString();
+                            int dictionaryKey = binaryReader.ReadInt32();
                             string dictionaryValue = binaryReader.ReadString();
                             if (!localizationManager.AddRawString(dictionaryKey, dictionaryValue))
                             {
