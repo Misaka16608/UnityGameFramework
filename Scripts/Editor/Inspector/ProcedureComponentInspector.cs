@@ -38,7 +38,21 @@ namespace UnityGameFramework.Editor
             }
             else if (EditorApplication.isPlaying)
             {
-                EditorGUILayout.LabelField("Current Procedure", t.CurrentProcedure == null ? "None" : t.CurrentProcedure.GetType().ToString());
+                string currentProcedureName = "None";
+                try
+                {
+                    var current = t.CurrentProcedure;
+                    if (current != null)
+                    {
+                        currentProcedureName = current.GetType().ToString();
+                    }
+                }
+                catch
+                {
+                    // ProcedureManager not initialized yet
+                }
+
+                EditorGUILayout.LabelField("Current Procedure", currentProcedureName);
             }
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
