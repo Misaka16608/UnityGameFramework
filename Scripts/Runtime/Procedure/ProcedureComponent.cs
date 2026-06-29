@@ -72,21 +72,31 @@ namespace UnityGameFramework.Runtime
             ProcedureBase[] procedures = new ProcedureBase[m_AvailableProcedureTypeNames.Length];
             for (int i = 0; i < m_AvailableProcedureTypeNames.Length; i++)
             {
-                Type procedureType = Utility.Assembly.GetType(m_AvailableProcedureTypeNames[i]);
-                if (procedureType == null)
-                {
-                    Log.Error("Can not find procedure type '{0}'.", m_AvailableProcedureTypeNames[i]);
-                    yield break;
-                }
+                string typeName = m_AvailableProcedureTypeNames[i];
 
-                procedures[i] = (ProcedureBase)Activator.CreateInstance(procedureType);
+                // Primary path: zero-reflection factory registry
+                procedures[i] = ProcedureRegistry.Create(typeName);
+
                 if (procedures[i] == null)
                 {
-                    Log.Error("Can not create procedure instance '{0}'.", m_AvailableProcedureTypeNames[i]);
-                    yield break;
+                    // Fallback: legacy reflection path for backward compatibility
+                    Log.Warning("Procedure '{0}' not found in registry, falling back to reflection.", typeName);
+                    Type procedureType = Utility.Assembly.GetType(typeName);
+                    if (procedureType == null)
+                    {
+                        Log.Error("Can not find procedure type '{0}'.", typeName);
+                        yield break;
+                    }
+
+                    procedures[i] = (ProcedureBase)Activator.CreateInstance(procedureType);
+                    if (procedures[i] == null)
+                    {
+                        Log.Error("Can not create procedure instance '{0}'.", typeName);
+                        yield break;
+                    }
                 }
 
-                if (m_EntranceProcedureTypeName == m_AvailableProcedureTypeNames[i])
+                if (m_EntranceProcedureTypeName == typeName)
                 {
                     m_EntranceProcedure = procedures[i];
                 }
