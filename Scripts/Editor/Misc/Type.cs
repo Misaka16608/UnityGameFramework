@@ -14,7 +14,7 @@ namespace UnityGameFramework.Editor
     /// <summary>
     /// 类型相关的实用函数。
     /// </summary>
-    internal static class Type
+    public static class Type
     {
         public static readonly List<string> RuntimeAssemblyNames = new List<string>
         {
