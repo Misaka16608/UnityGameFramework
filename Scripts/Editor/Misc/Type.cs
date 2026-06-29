@@ -16,7 +16,7 @@ namespace UnityGameFramework.Editor
     /// </summary>
     internal static class Type
     {
-        private static readonly string[] RuntimeAssemblyNames =
+        public static readonly List<string> RuntimeAssemblyNames = new List<string>
         {
 #if UNITY_2017_3_OR_NEWER
             "UnityGameFramework.Runtime",
@@ -24,7 +24,7 @@ namespace UnityGameFramework.Editor
             "Assembly-CSharp",
         };
 
-        private static readonly string[] RuntimeOrEditorAssemblyNames =
+        public static readonly List<string> RuntimeOrEditorAssemblyNames = new List<string>
         {
 #if UNITY_2017_3_OR_NEWER
             "UnityGameFramework.Runtime",
@@ -90,7 +90,7 @@ namespace UnityGameFramework.Editor
             return GetTypeNames(typeBase, RuntimeOrEditorAssemblyNames);
         }
 
-        private static string[] GetTypeNames(System.Type typeBase, string[] assemblyNames)
+        private static string[] GetTypeNames(System.Type typeBase, List<string> assemblyNames)
         {
             List<string> typeNames = new List<string>();
             foreach (string assemblyName in assemblyNames)
