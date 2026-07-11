@@ -6,6 +6,7 @@
 //------------------------------------------------------------
 
 using GameFramework;
+using GameFramework.Resource;
 using GameFramework.WebRequest;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,6 +39,9 @@ namespace UnityGameFramework.Runtime
 
         [SerializeField]
         private float m_Timeout = 30f;
+
+        [SerializeField]
+        private bool m_EnableUpdateUriTransform = false;
 
         /// <summary>
         /// 获取 Web 请求代理总数量。
@@ -99,6 +103,36 @@ namespace UnityGameFramework.Runtime
         }
 
         /// <summary>
+        /// 获取或设置更新地址变换回调函数。
+        /// </summary>
+        public UpdateUriTransformCallback UpdateUriTransform
+        {
+            get
+            {
+                return m_WebRequestManager.UpdateUriTransform;
+            }
+            set
+            {
+                m_WebRequestManager.UpdateUriTransform = value;
+            }
+        }
+
+        /// <summary>
+        /// 获取或设置是否启用更新地址变换。
+        /// </summary>
+        public bool EnableUpdateUriTransform
+        {
+            get
+            {
+                return m_WebRequestManager.EnableUpdateUriTransform;
+            }
+            set
+            {
+                m_WebRequestManager.EnableUpdateUriTransform = m_EnableUpdateUriTransform = value;
+            }
+        }
+
+        /// <summary>
         /// 游戏框架组件初始化。
         /// </summary>
         protected override void Awake()
@@ -113,6 +147,7 @@ namespace UnityGameFramework.Runtime
             }
 
             m_WebRequestManager.Timeout = m_Timeout;
+            m_WebRequestManager.EnableUpdateUriTransform = m_EnableUpdateUriTransform;
             m_WebRequestManager.WebRequestStart += OnWebRequestStart;
             m_WebRequestManager.WebRequestSuccess += OnWebRequestSuccess;
             m_WebRequestManager.WebRequestFailure += OnWebRequestFailure;

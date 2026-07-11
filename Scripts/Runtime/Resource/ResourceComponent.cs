@@ -76,6 +76,9 @@ namespace UnityGameFramework.Runtime
         private string m_UpdatePrefixUri = null;
 
         [SerializeField]
+        private bool m_EnableUpdateUriTransform = false;
+
+        [SerializeField]
         private int m_GenerateReadWriteVersionListLength = OneMegaBytes;
 
         [SerializeField]
@@ -317,6 +320,36 @@ namespace UnityGameFramework.Runtime
             set
             {
                 m_ResourceManager.UpdatePrefixUri = m_UpdatePrefixUri = value;
+            }
+        }
+
+        /// <summary>
+        /// 获取或设置资源更新下载地址变换回调函数。
+        /// </summary>
+        public UpdateUriTransformCallback UpdateUriTransform
+        {
+            get
+            {
+                return m_ResourceManager.UpdateUriTransform;
+            }
+            set
+            {
+                m_ResourceManager.UpdateUriTransform = value;
+            }
+        }
+
+        /// <summary>
+        /// 获取或设置是否启用资源更新下载地址变换。
+        /// </summary>
+        public bool EnableUpdateUriTransform
+        {
+            get
+            {
+                return m_ResourceManager.EnableUpdateUriTransform;
+            }
+            set
+            {
+                m_ResourceManager.EnableUpdateUriTransform = m_EnableUpdateUriTransform = value;
             }
         }
 
@@ -659,6 +692,7 @@ namespace UnityGameFramework.Runtime
             if (m_ResourceMode == ResourceMode.Updatable || m_ResourceMode == ResourceMode.UpdatableWhilePlaying)
             {
                 m_ResourceManager.UpdatePrefixUri = m_UpdatePrefixUri;
+                m_ResourceManager.EnableUpdateUriTransform = m_EnableUpdateUriTransform;
                 m_ResourceManager.GenerateReadWriteVersionListLength = m_GenerateReadWriteVersionListLength;
                 m_ResourceManager.UpdateRetryCount = m_UpdateRetryCount;
             }

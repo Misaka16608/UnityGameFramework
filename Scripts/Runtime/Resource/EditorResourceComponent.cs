@@ -217,6 +217,36 @@ namespace UnityGameFramework.Runtime
         }
 
         /// <summary>
+        /// 获取或设置资源更新下载地址变换回调函数。
+        /// </summary>
+        public UpdateUriTransformCallback UpdateUriTransform
+        {
+            get
+            {
+                throw new NotSupportedException("UpdateUriTransform");
+            }
+            set
+            {
+                throw new NotSupportedException("UpdateUriTransform");
+            }
+        }
+
+        /// <summary>
+        /// 获取或设置是否启用资源更新下载地址变换。
+        /// </summary>
+        public bool EnableUpdateUriTransform
+        {
+            get
+            {
+                throw new NotSupportedException("EnableUpdateUriTransform");
+            }
+            set
+            {
+                throw new NotSupportedException("EnableUpdateUriTransform");
+            }
+        }
+
+        /// <summary>
         /// 获取或设置每更新多少字节的资源，重新生成一次版本资源列表。
         /// </summary>
         public int GenerateReadWriteVersionListLength
