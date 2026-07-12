@@ -104,6 +104,17 @@ namespace UnityGameFramework.Runtime
         }
 
         /// <summary>
+        /// 尝试取消订阅事件处理回调函数。即使事件或 handler 未注册也不会抛出异常。
+        /// </summary>
+        /// <param name="id">事件类型编号。</param>
+        /// <param name="handler">要取消订阅的事件处理回调函数。</param>
+        /// <returns>成功取消订阅返回 true，事件或 handler 未注册返回 false。</returns>
+        public bool TryUnsubscribe(int id, EventHandler<GameEventArgs> handler)
+        {
+            return m_EventManager.TryUnsubscribe(id, handler);
+        }
+
+        /// <summary>
         /// 设置默认事件处理函数。
         /// </summary>
         /// <param name="handler">要设置的默认事件处理函数。</param>
